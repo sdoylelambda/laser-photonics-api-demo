@@ -294,3 +294,17 @@ function register_product_post_type() {
 }
 
 add_action('init', 'register_product_post_type');
+
+
+/**
+ * Force white text site-wide (bypasses Elementor Global Colors/cache issues)
+ */
+function force_white_text_css() {
+    echo '<style>
+        body, h1, h2, h3, h4, h5, h6, p, span, a, li {
+            color: #ffffff !important;
+        }
+    </style>';
+}
+add_action('wp_head', 'force_white_text_css');
+
