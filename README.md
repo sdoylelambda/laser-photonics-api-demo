@@ -26,4 +26,4 @@ Then visit `http://localhost:8080` and complete the WordPress install screen.
 
 ## Tech stack
 
-WordPress · Elementor · PHP · MySQL · Docker
+WordPress · Elementor · PHP · MySQL · Docker · HTML
