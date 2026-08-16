@@ -132,7 +132,21 @@ docker exec -it laserphotonics_db mysql -u wpuser -pwppassword wordpress -e \\
 'https:\\\\\\\\/\\\\\\\/OLD_DOMAIN', 'https:\\\\\\\\/\\\\\\\/NEW_DOMAIN'), \\
 'https://OLD_DOMAIN', 'https://NEW_DOMAIN') WHERE post_id=6;"
 \`\`\`
-Then clear the Elementor cache (see above).
+Then clear the Elementor cache (see above).### Images not loading / "mixed content" errors in browser console
+Image URLs got hardcoded to an old domain (e.g. an old ngrok link) inside Elementor's saved data. Elementor stores URLs with escaped slashes (`\/\/`) in its JSON, so you need to fix BOTH the escaped and plain versions, and both post_content and postmeta. Run these one at a time, replacing OLD_DOMAIN and NEW_DOMAIN with the actual domains:
+
+\`\`\`bash
+# Fix escaped URLs (inside Elementor's JSON data)
+docker exec -it laserphotonics_db mysql -u wpuser -pwppassword wordpress -e "UPDATE wp_postmeta SET meta_value = REPLACE(meta_value, 'http:\\\\/\\\\/OLD_DOMAIN', 'https:\\\\/\\\\/NEW_DOMAIN') WHERE post_id=6;"
+
+# Fix plain (non-escaped) URLs, in case any exist
+docker exec -it laserphotonics_db mysql -u wpuser -pwppassword wordpress -e "UPDATE wp_posts SET post_content = REPLACE(post_content, 'http://OLD_DOMAIN', 'https://NEW_DOMAIN') WHERE ID=6;"
+docker exec -it laserphotonics_db mysql -u wpuser -pwppassword wordpress -e "UPDATE wp_postmeta SET meta_value = REPLACE(meta_value, 'http://OLD_DOMAIN', 'https://NEW_DOMAIN') WHERE post_id=6;"
+
+# Also fix the image attachment records themselves
+docker exec -it laserphotonics_db mysql -u wpuser -pwppassword wordpress -e "UPDATE wp_posts SET guid = REPLACE(guid, 'http://OLD_DOMAIN', 'https://NEW_DOMAIN') WHERE post_type='attachment';"
+\`\`\`
+Then clear the Elementor cache (see above) and hard refresh.
 
 ### Global Colors / text color changes not showing on the live site
 Elementor's Global Colors + CSS cache can get out of sync. If it won't reliably update:
